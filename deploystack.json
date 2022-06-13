@@ -1,0 +1,19 @@
+{
+    "title": "RW Test Deployment",
+    "duration": 5,
+    "collect_project": true,
+    "collect_region": true,
+    "region_type": "compute",
+    "region_default": "us-east4",
+    "collect_zone": true,
+    "hard_settings": {
+      "basename": "rwtest"
+    },
+    "custom_settings": [
+      {
+        "name": "nodes",
+        "description": "Please enter the number of nodes",
+        "default": "1"
+      }
+    ]
+  }

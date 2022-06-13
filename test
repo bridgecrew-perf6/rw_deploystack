@@ -1,0 +1,52 @@
+# Setup variables here
+source globals
+get_project_id PROJECT
+get_project_number PROJECT_NUMBER $PROJECT
+REGION=us-east4
+ZONE=us-east4-c
+BASENAME=rwtest
+SIZE=1
+
+# Make sure that project is hard set
+gcloud config set project ${PROJECT}
+
+# spin up terraform with variables plugged in to build the infrastructure
+terraform init
+terraform apply -auto-approve -var project_id="${PROJECT}" -var project_number="${PROJECT_NUMBER}" -var region="${REGION}" -var zone="${ZONE}" -var basename="${BASENAME}" -var nodes="${SIZE}"
+
+# You might hace to do some editing here to make these tests work
+section_open "Test Managed Instance Group"
+    evalTest 'gcloud compute instance-groups managed describe $BASENAME-mig --zone $ZONE --format="value(name)"'  $BASENAME-mig
+
+    COUNT=$(gcloud compute instances list --format="value(name)" | grep $BASENAME-mig | wc -l | xargs)
+
+    if [ $COUNT -ne $SIZE ]
+    then
+        printf "Halting - error: expected $SIZE instances of GCE got $COUNT  \n"
+        exit 1
+    else
+         printf "number of GCE instances is ok \n"
+    fi
+
+section_close
+
+# But in a lot of cases we can just use eval test with a gcloud command and a
+# desrired result.
+section_open "Test Instance Template"
+    evalTest 'gcloud compute instance-templates describe $BASENAME-template --format="value(name)"'  $BASENAME-template
+section_close
+
+..
+
+# Now run a destroy operation.
+terraform destroy -auto-approve -var project_id="${BASENAME}" -var project_number="${PROJECT_NUMBER}" -var region="${REGION}" -var zone="${ZONE}" -var basename="${BASENAME}" -var nodes="${SIZE}"
+
+# Test all of the parts are destroyed
+section_open "Test Managed Instance Group doesn't exist"
+    evalTest 'gcloud compute instance-groups managed describe $BASENAME-mig --zone $ZONE --format="value(name)"'  "EXPECTERROR"
+section_close
+
+printf "$DIVIDER"
+printf "CONGRATS!!!!!!! \n"
+printf "You got the end the of your test with everything working. \n"
+printf "$DIVIDER"
