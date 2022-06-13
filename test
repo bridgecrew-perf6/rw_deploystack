@@ -1,9 +1,9 @@
 # Setup variables here
-source globals
+source ./tools/testprojects/globals
 get_project_id PROJECT
 get_project_number PROJECT_NUMBER $PROJECT
-REGION=us-east4
-ZONE=us-east4-c
+REGION=us-central1
+ZONE=us-central1-a
 BASENAME=rwtest
 SIZE=1
 
@@ -12,13 +12,15 @@ gcloud config set project ${PROJECT}
 
 # spin up terraform with variables plugged in to build the infrastructure
 terraform init
+terraform plan -var project_id="${PROJECT}" -var project_number="${PROJECT_NUMBER}" -var region="${REGION}" -var zone="${ZONE}" -var basename="${BASENAME}" -var nodes="${SIZE}"
+
 terraform apply -auto-approve -var project_id="${PROJECT}" -var project_number="${PROJECT_NUMBER}" -var region="${REGION}" -var zone="${ZONE}" -var basename="${BASENAME}" -var nodes="${SIZE}"
 
-# You might hace to do some editing here to make these tests work
-section_open "Test Managed Instance Group"
-    evalTest 'gcloud compute instance-groups managed describe $BASENAME-mig --zone $ZONE --format="value(name)"'  $BASENAME-mig
+# You might have to do some editing here to make these tests work
+section_open "Create Test Instance"
+    evalTest 'gcloud compute instances describe $BASENAME --zone $ZONE --format="value(name)"'  $BASENAME
 
-    COUNT=$(gcloud compute instances list --format="value(name)" | grep $BASENAME-mig | wc -l | xargs)
+    COUNT=$(gcloud compute instances list --format="value(name)" | grep $BASENAME | wc -l | xargs)
 
     if [ $COUNT -ne $SIZE ]
     then
@@ -32,18 +34,18 @@ section_close
 
 # But in a lot of cases we can just use eval test with a gcloud command and a
 # desrired result.
-section_open "Test Instance Template"
-    evalTest 'gcloud compute instance-templates describe $BASENAME-template --format="value(name)"'  $BASENAME-template
+section_open "Test Instance Creation"
+    evalTest 'gcloud compute instances describe $BASENAME --zone $ZONE --format="value(name)"'  $BASENAME
 section_close
 
-..
+
 
 # Now run a destroy operation.
 terraform destroy -auto-approve -var project_id="${BASENAME}" -var project_number="${PROJECT_NUMBER}" -var region="${REGION}" -var zone="${ZONE}" -var basename="${BASENAME}" -var nodes="${SIZE}"
 
 # Test all of the parts are destroyed
-section_open "Test Managed Instance Group doesn't exist"
-    evalTest 'gcloud compute instance-groups managed describe $BASENAME-mig --zone $ZONE --format="value(name)"'  "EXPECTERROR"
+section_open "Test Instance doesn't exist"
+    evalTest 'gcloud compute instances describe $BASENAME --zone $ZONE --format="value(name)"'  "EXPECTERROR"
 section_close
 
 printf "$DIVIDER"

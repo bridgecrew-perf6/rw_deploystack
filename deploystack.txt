@@ -1,0 +1,2 @@
+This process will configure and create the following:
+        * Compute Instance

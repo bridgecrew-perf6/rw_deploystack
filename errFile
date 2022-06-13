@@ -1,0 +1,3 @@
+ERROR: (gcloud.compute.instances.describe) Could not fetch resource:
+ - The resource 'projects/robert-admin/zones/us-central1-a/instances/rwtest' was not found
+
