@@ -15,3 +15,5 @@ terraform.tfvars
 go-code-cover
 cover.out
 testing.yaml
+terraform.tfstate
+terraform.tfstate.backup

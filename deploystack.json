@@ -1,5 +1,5 @@
 {
-    "title": "RW Test Deployment",
+    "title": "RW Test Compute Instance Deployment",
     "duration": 5,
     "collect_project": true,
     "collect_region": true,
