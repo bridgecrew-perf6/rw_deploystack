@@ -17,3 +17,4 @@ cover.out
 testing.yaml
 terraform.tfstate
 terraform.tfstate.backup
+.terraform.lock.hcl
